@@ -215,9 +215,15 @@ section:hover {
   <h2>Redes convolucionales</h2>
 
   <div class="text-box">
-    <p>El deep learning es una rama del machine learning basada en redes neuronales profundas capaces de aprender representaciones jerárquicas.</p>
-    <p>Una de sus principales ventajas es la extracción automática de características sin necesidad de ingeniería manual.</p>
-    <p>Las CNN están compuestas por capas especializadas que transforman progresivamente la información.</p>
+<p> El deep learning, un subcampo de la inteligencia artificial, es una categoría dentro del Machine learning. Una de sus principales características es el uso de redes neuronales artificiales de múltiples capas, estas redes son capaces de aprender representaciones jerárquicas de datos. </p>
+
+<p> Una de sus principales ventajas y diferencias con los modelos de aprendizaje tradicionales es su independencia a la ingeniería manual de características. Los modelos de aprendizaje profundo son capaces de extraer automáticamente patrones complejos a partir de los datos proporcionados. Esto permite la implementación en tareas mucho más complejas, ya que reduce la necesidad de selección manual de características que la inteligencia artificial debe identificar [1]. </p>
+
+
+<p> Una CNN posee una arquitectura jerárquica compuesta por múltiples capas especializadas, cada capa tiene una función y su objetivo es extraer progresivamente las características más complejas de los datos de entrada. Generalmente una CNN incluye capas convolucionales, funciones de activación, capas de pooling y capas densas. </p>
+
+<p>Estas capas se organizan de forma jerárquica y trabajan en conjunto para transformar la imagen original en una representación abstracta que pueda ser utilizada para tareas de análisis y clasificación [2].</p>
+
   </div>
 
   <div class="sim-container" id="simNeuContainer">
@@ -234,9 +240,12 @@ onclick="goFullscreen('simNeuContainer', 'SimNeu.html')">
   <h2>Capas convolucionales</h2>
 
   <div class="text-box">
-    <p>Las capas convolucionales aplican filtros que recorren la imagen para extraer características relevantes.</p>
-    <p>Los filtros detectan patrones como bordes y texturas.</p>
-    <p>La compartición de pesos reduce el número de parámetros y mejora la eficiencia.</p>
+<p>Su objetivo es extraer características relevantes de la imagen mediante filtros o kernels que se deslizan a través de toda la entrada. Desde una perspectiva matemática, se aplica un filtro K sobre la imagen de input I, lo que genera un mapa de características </p>
+
+<p>Cada filtro que se aplica a la imagen tiene como objetivo aprender a detectar patrones específicos como bordes, texturas, o esquinas. Las primeras capas de la red se centran en detectar las características más simples, mientras que las capas profundas buscan identificar características complejas.</p>
+
+<p>Una característica clave de las CNNs es la compartición de pesos, al ser una red no completamente conectada se puede aplicar un mismo filtro sobre toda la imagen sin generar una gran cantidad de parámetros, como sucede en redes completamente conectadas. Esto hace que el proceso de entrenamiento sea mucho más eficiente.</p> 
+
   </div>
 
   <div class="sim-container" id="simConvContainer">
@@ -253,8 +262,10 @@ onclick="goFullscreen('simConvContainer', 'SimConv.html')">
   <h2>Capas de pooling</h2>
 
   <div class="text-box">
-    <p>El pooling reduce la dimensionalidad de los datos manteniendo la información relevante.</p>
-    <p>También ayuda a evitar el sobreajuste.</p>
+<p>Las capas de pooling tienen como función principal reducir la dimensionalidad espacial de los mapas de características generados por las capas convolucionales sin perder la información importante. La reducción dimensional cumple la función de disminuir el costo computacional del modelo, reduciendo el número de parámetros en las capas posteriores. Realizar pooling no solo ayuda a aliviar el costo computacional sino que introduce ventajas como evitar el sobreajuste o introducir invarianza a pequeñas traslaciones o deformaciones en la imagen. </p>
+
+<p>El pooling se basa en la aplicación de una operación de agregación sobre regiones locales de los mapas de características, a diferencia de las convoluciones, estas operaciones no son entrenables, es decir sus parámetros no son entrenables, por lo que su comportamiento está completamente determinado por la operación matemática que realizan.</p>
+
   </div>
 
   <div class="sim-container" id="simPoolContainer">
@@ -271,8 +282,10 @@ onclick="goFullscreen('simPoolContainer', 'SimPool.html')">
   <h2>Cómo funcionan las capas densas</h2>
 
   <div class="text-box">
-    <p>Las capas densas realizan la clasificación final utilizando todas las características extraídas.</p>
-    <p>Cada neurona está conectada con todas las de la capa anterior.</p>
+<p>Las capas densas, también denominadas capas conectadas, se encuentran en la parte final de la red neuronal y su función principal es realizar la clasificación final basada en las características extraídas por las capas convolucionales. </p>
+
+<p>A diferencia de las capas convolucionales, donde cada neurona está conectada a una región local de entrada, en la capa densa cada neurona está conectada entre sí con todas las neuronas de la capa anterior, por lo que utiliza toda la información disponible aprendida por la red.</p> 
+
   </div>
 
   <div class="sim-container" id="simDenseContainer">
