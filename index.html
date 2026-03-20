@@ -158,7 +158,36 @@ section:hover {
   }
 
 }
+/* 🔥 FULLSCREEN REAL */
+.sim-container:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  background: #eef7f1; /* mismo color de tu página */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
+.sim-container:fullscreen iframe {
+  width: 95vw;
+  height: 95vh;
+  border-radius: 12px;
+}
+
+/* Compatibilidad navegadores */
+.sim-container:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  background: #eef7f1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sim-container:-webkit-full-screen iframe {
+  width: 95vw;
+  height: 95vh;
+}
 </style>
 </head>
 
