@@ -4,9 +4,47 @@
 <meta charset="UTF-8">
 <title>Simulación de capa convolucional</title>
 <style>
-  body { background: #111; color: white; text-align: center; font-family: Arial; }
-  canvas { background: #111; margin: 10px; border: 1px solid #333; }
-  input { margin: 10px; }
+
+body { 
+  margin: 0;
+  background: #eef7f1;
+  color: black;
+  text-align: center;
+  font-family: Arial;
+}
+
+canvas { 
+  background: #111; 
+  margin: 10px; 
+  border: 1px solid #333; 
+  width: 45vw;
+  height: auto;
+  max-width: 600px;
+}
+
+input { 
+  margin: 10px; 
+}
+
+/* 🔥 fullscreen */
+:fullscreen canvas {
+  width: 70vw;
+  max-width: none;
+}
+
+/* Safari */
+:-webkit-full-screen canvas {
+  width: 70vw;
+  max-width: none;
+}
+
+/* 📱 móvil */
+@media (max-width: 768px) {
+  canvas {
+    width: 90vw;
+  }
+}
+
 </style>
 </head>
 <body>
