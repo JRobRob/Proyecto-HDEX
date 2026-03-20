@@ -100,15 +100,20 @@ h2 {
   position: absolute;
   top: 10px;
   right: 10px;
-  z-index: 10;
-  background: rgba(0,0,0,0.6);
+  z-index: 20;
+  background: #1b5e20;
   color: white;
   border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.9em;
-  transition: 0.2s;
+  font-weight: 500;
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.3);
+}
+
+.fullscreen-btn:hover {
+  background: #2e7d32;
 }
 
 .fullscreen-btn:hover {
@@ -250,7 +255,16 @@ section:hover {
 
 <!-- SCRIPT FULLSCREEN -->
 <script>
-function goFullscreen(elementId) {
+function goFullscreen(elementId, url) {
+
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    // 🔥 En móvil → abrir en nueva pestaña
+    window.open(url, '_blank');
+    return;
+  }
+
   const el = document.getElementById(elementId);
 
   if (el.requestFullscreen) {
@@ -262,6 +276,5 @@ function goFullscreen(elementId) {
   }
 }
 </script>
-
 </body>
 </html>
