@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Simulación de capa convolucional</title>
+<style>
+  body { background: #111; color: white; text-align: center; font-family: Arial; }
+  canvas { background: #111; margin: 10px; border: 1px solid #333; }
+  input { margin: 10px; }
+</style>
+</head>
+<body>
+<h2>Simulación de capa convolucional</h2>
+<input type="file" id="upload" accept="image/*">
+<br>
+<canvas id="imageCanvas"></canvas>
+<canvas id="featureCanvas"></canvas>
+
+<script>
+const imgCanvas = document.getElementById("imageCanvas");
+const featCanvas = document.getElementById("featureCanvas");
+const imgCtx = imgCanvas.getContext("2d");
+const featCtx = featCanvas.getContext("2d");
+
+let imageData;
+
+// 🔥 ahora más grande (visual)
+const kernelVisualSize = 40;
+let speed = 0.05; // más rápido
+
+// Kernel (edge detection)
+const kernel = [
+  [-1, -1, -1],
+  [-1,  8, -1],
+  [-1, -1, -1]
+];
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+document.getElementById("upload").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  const img = new Image();
+
+  img.onload = () => {
+    imgCanvas.width = img.width;
+    imgCanvas.height = img.height;
+    featCanvas.width = img.width;
+    featCanvas.height = img.height;
+
+    imgCtx.drawImage(img, 0, 0);
+    imageData = imgCtx.getImageData(0, 0, img.width, img.height);
+
+    startConvolution();
+  };
+
+  img.src = URL.createObjectURL(file);
+});
+
+function getGray(x, y) {
+  const i = (y * imageData.width + x) * 4;
+  const r = imageData.data[i];
+  const g = imageData.data[i + 1];
+  const b = imageData.data[i + 2];
+  return 0.299*r + 0.587*g + 0.114*b;
+}
+
+function setFeaturePixel(x, y, value) {
+  const v = Math.max(0, Math.min(255, value));
+  featCtx.fillStyle = `rgb(${v},${v},${v})`;
+  featCtx.fillRect(x, y, 1, 1);
+}
+
+function drawKernelBox(x, y) {
+  imgCtx.strokeStyle = "red";
+  imgCtx.lineWidth = 2;
+  imgCtx.strokeRect(x - kernelVisualSize/2, y - kernelVisualSize/2, kernelVisualSize, kernelVisualSize);
+}
+
+function drawConnection(x1, y1, x2, y2) {
+  const offset = 50;
+
+  imgCtx.beginPath();
+  imgCtx.moveTo(x1, y1);
+  imgCtx.lineTo(imgCanvas.width + offset, y2);
+  imgCtx.strokeStyle = "cyan";
+  imgCtx.lineWidth = 1.5;
+  imgCtx.stroke();
+}
+
+function drawKernelMatrix(x, y) {
+  const size = 15;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      imgCtx.fillStyle = "white";
+      imgCtx.fillText(kernel[i][j], x + j*size, y + i*size);
+    }
+  }
+}
+
+async function startConvolution() {
+  const w = imageData.width;
+  const h = imageData.height;
+
+  for (let y = 1; y < h - 1; y+=2) {
+    for (let x = 1; x < w - 1; x+=2) {
+
+      imgCtx.putImageData(imageData, 0, 0);
+
+      // 🔴 cuadro grande
+      drawKernelBox(x, y);
+
+      // 🔵 conexión visual hacia feature map
+      drawConnection(x, y, y);
+
+      // 🧠 mostrar kernel
+      drawKernelMatrix(10, 20);
+
+      let sum = 0;
+      for (let ky = -1; ky <= 1; ky++) {
+        for (let kx = -1; kx <= 1; kx++) {
+          sum += getGray(x + kx, y + ky) * kernel[ky + 1][kx + 1];
+        }
+      }
+
+      setFeaturePixel(x, y, sum);
+
+      await sleep(speed);
+    }
+  }
+}
+</script>
+</body>
+</html>

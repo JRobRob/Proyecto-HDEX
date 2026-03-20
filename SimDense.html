@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Simulación de capas densas </title>
+<style>
+  body { background: #111; color: white; text-align: center; font-family: Arial; }
+  canvas { background: #111; display: block; margin: auto; }
+  button { margin-top: 10px; padding: 10px 20px; }
+</style>
+</head>
+<body>
+<h2>Simulación de capas densas</h2>
+<canvas id="canvas" width="900" height="500"></canvas>
+<br>
+<button onclick="startSimulation()">Iniciar</button>
+<button onclick="stopSimulation()">Detener</button>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const layers = [1, 12, 12, 1];
+let nodes = [];
+let connections = [];
+let running = false;
+
+// paleta de colores para cada trayectoria
+const colors = ["#ff4d4d","#4dd2ff","#ffd24d","#7dff7d","#c77dff","#ff7db3"];
+let colorIndex = 0;
+
+function initNetwork() {
+  nodes = [];
+  connections = [];
+  const spacingX = canvas.width / (layers.length + 1);
+
+  layers.forEach((count, i) => {
+    const layerNodes = [];
+    const spacingY = canvas.height / (count + 1);
+    for (let j = 0; j < count; j++) {
+      layerNodes.push({ x: spacingX * (i + 1), y: spacingY * (j + 1), active: false, color: null });
+    }
+    nodes.push(layerNodes);
+  });
+
+  for (let i = 0; i < nodes.length - 1; i++) {
+    nodes[i].forEach((_, idx1) => {
+      nodes[i + 1].forEach((_, idx2) => {
+        connections.push({
+          from: { layer: i, index: idx1 },
+          to: { layer: i + 1, index: idx2 },
+          active: false,
+          color: null
+        });
+      });
+    });
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  connections.forEach(c => {
+    const n1 = nodes[c.from.layer][c.from.index];
+    const n2 = nodes[c.to.layer][c.to.index];
+
+    ctx.beginPath();
+    ctx.moveTo(n1.x, n1.y);
+    ctx.lineTo(n2.x, n2.y);
+    ctx.strokeStyle = c.active ? c.color : "#444";
+    ctx.lineWidth = c.active ? 2 : 1;
+    ctx.stroke();
+  });
+
+  nodes.forEach(layer => {
+    layer.forEach(n => {
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, 10, 0, Math.PI * 2);
+      ctx.fillStyle = n.active ? n.color : "#888";
+      ctx.fill();
+    });
+  });
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function generatePath() {
+  let path = [];
+  let currentIndex = 0;
+
+  for (let layer = 0; layer < nodes.length - 1; layer++) {
+    const nextIndex = Math.floor(Math.random() * nodes[layer + 1].length);
+
+    path.push({
+      from: { layer: layer, index: currentIndex },
+      to: { layer: layer + 1, index: nextIndex }
+    });
+
+    currentIndex = nextIndex;
+  }
+
+  return path;
+}
+
+async function animatePath(path, color, reverse=false) {
+  const steps = reverse ? [...path].reverse() : path;
+
+  for (let step of steps) {
+    const fromNode = nodes[step.from.layer][step.from.index];
+    const toNode = nodes[step.to.layer][step.to.index];
+
+    const conn = connections.find(c =>
+      c.from.layer === step.from.layer &&
+      c.from.index === step.from.index &&
+      c.to.layer === step.to.layer &&
+      c.to.index === step.to.index
+    );
+
+    fromNode.active = true;
+    fromNode.color = color;
+
+    conn.active = true;
+    conn.color = color;
+
+    draw();
+    await sleep(200);
+
+    toNode.active = true;
+    toNode.color = color;
+
+    draw();
+    await sleep(200);
+
+    fromNode.active = false;
+  }
+}
+
+function resetActivity() {
+  nodes.forEach(layer => layer.forEach(n => { n.active = false; n.color = null; }));
+  connections.forEach(c => { c.active = false; c.color = null; });
+}
+
+async function startSimulation() {
+  if (running) return;
+  running = true;
+
+  while (running) {
+    resetActivity();
+    draw();
+
+    const path = generatePath();
+    const color = colors[colorIndex % colors.length];
+    colorIndex++;
+
+    await animatePath(path, color, false); // forward
+    await animatePath(path, color, true);  // backward
+
+    await sleep(300);
+  }
+}
+
+function stopSimulation() {
+  running = false;
+}
+
+initNetwork();
+draw();
+</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Neural Network Verde</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #020402, #000000);
+}
+
+canvas {
+    display: block;
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let mouse = { x: null, y: null };
+
+window.addEventListener("mousemove", (e) => {
+    mouse.x = e.x;
+    mouse.y = e.y;
+});
+
+class Neuron {
+    constructor(x, y, layer) {
+        this.x = x;
+        this.y = y;
+        this.layer = layer;
+        this.radius = 4 + Math.random() * 3;
+        this.pulse = Math.random() * 100;
+    }
+
+    draw() {
+        this.pulse += 0.05;
+
+        let glow = Math.sin(this.pulse) * 2 + 4;
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius + glow, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0, 255, 100, 0.12)";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#00ff88";
+        ctx.shadowColor = "#00ff88";
+        ctx.shadowBlur = 15;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+}
+
+let layers = [];
+let connections = [];
+
+function createNetwork() {
+    layers = [];
+    connections = [];
+
+    let numLayers = 5;
+
+    for (let i = 0; i < numLayers; i++) {
+        let layer = [];
+        let numNeurons = 6 + Math.floor(Math.random() * 4);
+
+        for (let j = 0; j < numNeurons; j++) {
+            let x = (canvas.width / (numLayers + 1)) * (i + 1);
+            let y = (canvas.height / (numNeurons + 1)) * (j + 1);
+
+            layer.push(new Neuron(x, y, i));
+        }
+
+        layers.push(layer);
+    }
+
+    for (let i = 0; i < layers.length - 1; i++) {
+        for (let n1 of layers[i]) {
+            for (let n2 of layers[i + 1]) {
+                connections.push({ 
+                    from: n1, 
+                    to: n2, 
+                    progress: Math.random(),
+                    speed: 0.005 + Math.random() * 0.02,
+                    hueOffset: Math.random()
+                });
+            }
+        }
+    }
+}
+
+createNetwork();
+
+function drawConnections() {
+    for (let c of connections) {
+        let dx = c.to.x - c.from.x;
+        let dy = c.to.y - c.from.y;
+
+        ctx.beginPath();
+        ctx.moveTo(c.from.x, c.from.y);
+        ctx.lineTo(c.to.x, c.to.y);
+
+        let distMouse = Math.hypot(mouse.x - c.from.x, mouse.y - c.from.y);
+        let opacity = distMouse < 120 ? 0.7 : 0.08;
+
+        ctx.strokeStyle = `rgba(0, 255, 120, ${opacity})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // movimiento
+        c.progress += c.speed;
+        if (c.progress > 1) c.progress = 0;
+
+        let sx = c.from.x + dx * c.progress;
+        let sy = c.from.y + dy * c.progress;
+
+        // verde variable
+        let green = 150 + Math.sin(c.progress * Math.PI * 2 + c.hueOffset * 10) * 100;
+        let brightness = 0.5 + Math.random() * 0.5;
+
+        ctx.beginPath();
+        ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, ${green}, 80, ${brightness})`;
+        ctx.shadowColor = `rgb(0, ${green}, 80)`;
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+}
+
+function animate() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    drawConnections();
+
+    for (let layer of layers) {
+        for (let neuron of layer) {
+            neuron.draw();
+        }
+    }
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+
+window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    createNetwork();
+});
+</script>
+
+</body>
+</html>

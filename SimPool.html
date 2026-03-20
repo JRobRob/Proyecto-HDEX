@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Simulación de capa de Pooling</title>
+<style>
+  body { background:#111; color:white; text-align:center; font-family:Arial; }
+  canvas { background:#111; border:1px solid #333; margin:10px; }
+</style>
+</head>
+<body>
+
+<h2>Simulación de capa de Pooling</h2>
+<input type="file" id="upload" accept="image/*">
+<br>
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let imageData;
+let imgWidth, imgHeight;
+let offsetX;
+
+const poolSize = 20;
+let speed = 0.5;
+
+// 🔥 memoria del pooled map
+let pooledPixels = [];
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+document.getElementById("upload").addEventListener("change", e => {
+  const file = e.target.files[0];
+  const img = new Image();
+
+  img.onload = () => {
+    imgWidth = img.width;
+    imgHeight = img.height;
+
+    offsetX = imgWidth + 40;
+
+    canvas.width = imgWidth + imgWidth/2 + 60;
+    canvas.height = imgHeight;
+
+    ctx.drawImage(img, 0, 0);
+    imageData = ctx.getImageData(0,0,imgWidth,imgHeight);
+
+    pooledPixels = []; // reset
+
+    startPooling();
+  };
+
+  img.src = URL.createObjectURL(file);
+});
+
+function getGray(x,y){
+  const i = (y * imgWidth + x)*4;
+  const r = imageData.data[i];
+  const g = imageData.data[i+1];
+  const b = imageData.data[i+2];
+  return 0.299*r + 0.587*g + 0.114*b;
+}
+
+// 🔥 redraw limpio
+function drawScene(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.putImageData(imageData, 0, 0);
+
+  // redibujar pooled map
+  pooledPixels.forEach(p => {
+    ctx.fillStyle = `rgb(${p.v},${p.v},${p.v})`;
+    ctx.fillRect(offsetX + p.x, p.y, 1, 1);
+  });
+}
+
+function drawBox(x,y){
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x, y, poolSize, poolSize);
+}
+
+function drawConnection(x,y,px,py){
+  const startX = x + poolSize/2;
+  const startY = y + poolSize/2;
+
+  const endX = offsetX + px;
+  const endY = py;
+
+  ctx.beginPath();
+  ctx.moveTo(startX, startY);
+  ctx.lineTo(endX, endY);
+  ctx.strokeStyle = "red";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function drawHighlight(x,y){
+  ctx.fillStyle = "rgba(0,255,0,0.4)";
+  ctx.fillRect(x, y, 4, 4);
+}
+
+function drawPoolPixel(x,y,value){
+  const v = Math.max(0, Math.min(255,value));
+
+  // guardar en memoria
+  pooledPixels.push({x, y, v});
+
+  ctx.fillStyle = `rgb(${v},${v},${v})`;
+  ctx.fillRect(offsetX + x, y, 1, 1);
+}
+
+async function startPooling(){
+  for(let y=0; y<imgHeight-1; y+=2){
+    for(let x=0; x<imgWidth-1; x+=2){
+
+      drawScene(); // 🔥 limpia todo correctamente
+
+      let maxVal = -Infinity;
+      let maxX = x;
+      let maxY = y;
+
+      for(let dy=0; dy<2; dy++){
+        for(let dx=0; dx<2; dx++){
+          const val = getGray(x+dx, y+dy);
+          if(val > maxVal){
+            maxVal = val;
+            maxX = x+dx;
+            maxY = y+dy;
+          }
+        }
+      }
+
+      drawBox(x,y);
+      drawHighlight(maxX,maxY);
+
+      const px = Math.floor(x/2);
+      const py = Math.floor(y/2);
+
+      drawConnection(x,y,px,py);
+      drawPoolPixel(px,py,maxVal);
+
+      await sleep(speed);
+    }
+  }
+}
+</script>
+
+</body>
+</html>
